@@ -1,21 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import {Link, useParams} from 'react-router-dom';
+import {parse} from 'marked';
 import coursesData from '../coursesData';
 
 function CourseModule() {
     const { moduleId } = useParams();
     const course = coursesData.find(c => c.id === moduleId);
 
+    const createMarkup = (markdownContent) => {
+        return { __html: parse(markdownContent) };
+    };
+
     return (
         <div>
-            <h1>Course Module: {moduleId}</h1>
             {course ? (
                 <div>
-                    <p>{course.content}</p>
+                    <h1>Course Module: {course.title}</h1>
+                    <div dangerouslySetInnerHTML={createMarkup(course.content)}/>
                     <Link to={`/quiz/${moduleId}`}>Go to quiz</Link>
                 </div>
             ) : (
-                <p>Loading module content...</p>
+                <div>
+                    <h1>Course Module: {moduleId}</h1>
+                    <p>Loading module content...</p>
+                </div>
             )}
         </div>
     );
