@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Header = ({ userWalletAddress, connectWallet }) => {
+const Header = ({ userWalletAddress, connectWallet, disconnectWallet }) => {
     return (
         <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
             <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -10,7 +10,10 @@ const Header = ({ userWalletAddress, connectWallet }) => {
             </Link>
             <div>
                 {userWalletAddress ? (
-                    <span>{userWalletAddress}</span>
+                    <div>
+                        <span>{userWalletAddress}</span>
+                        <button onClick={disconnectWallet}>Disconnect</button>
+                    </div>
                 ) : (
                     <button onClick={connectWallet}>Connect Wallet</button>
                 )}
