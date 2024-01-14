@@ -32,7 +32,7 @@ contract QuizKeeper is ERC1155, AccessControl, ERC1155Burnable, ERC1155Pausable,
 
     constructor() ERC1155("ipfs://TODO/{id}.json") { // TODO: add initial URI
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        addCourse(0, "Main course");
+        _grantRole(CONTENT_MOD_ROLE, msg.sender);
         /*
          TODO: how to handle initial course as that can't be closed after revealing the answers?
          Option 1: Change around the sequence of answers for the main course every month so previous results can't be copied.
@@ -42,24 +42,24 @@ contract QuizKeeper is ERC1155, AccessControl, ERC1155Burnable, ERC1155Pausable,
          */
     }
 
-    function addCourse(uint id, string title) public onlyRole(CONTENT_MOD_ROLE) {
+    function addCourse(uint id, string calldata title) public onlyRole(CONTENT_MOD_ROLE) {
         courses.push(Course({ id: id, title: title, uploadDate: block.timestamp, closeDate: 0 }));
     }
 
     function revealCourseAnswers(uint id, uint[] calldata answers) external onlyRole(CONTENT_MOD_ROLE) {
-        Course course = findCourse(id);
+        Course memory course = findCourse(id);
         course.closeDate = block.timestamp;
-        courseAnswers.push(id, answers);
+        courseAnswers[id] = answers;
         // TODO: check user answers and give out NFTs
     }
 
     function submitUserAnswer(uint id, uint[] calldata answers) external {
-        Course course = findCourse(id);
+        Course memory course = findCourse(id);
         require(course.closeDate < block.timestamp);
         userAnswers[id][msg.sender] = answers;
     }
 
-    function findCourse(uint id) internal returns(Course) {
+    function findCourse(uint id) internal view returns(Course memory) {
         for (uint i = 0; i < courses.length; i++) {
             if (courses[i].id == id) {
                 return courses[i];
