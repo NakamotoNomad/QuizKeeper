@@ -2,17 +2,16 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Pausable.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
+import "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
 
 /// @custom:security-contact nakamotonomad@outlook.com
-contract QuizKeeper is ERC1155, AccessControl, ERC1155Burnable, ERC1155Pausable, ERC1155Supply {
+contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC1155Pausable, ERC1155Supply {
 
     bytes32 public constant URI_SETTER_ROLE = keccak256("URI_SETTER_ROLE");
     bytes32 public constant CONTENT_MOD_ROLE = keccak256("CONTENT_MOD_ROLE");
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE"); // TODO: make the pauser role like a multisig (at least 66% of all content moderators must agree)
 
     uint256 public constant MAIN_ID = 0;
 
@@ -31,6 +30,9 @@ contract QuizKeeper is ERC1155, AccessControl, ERC1155Burnable, ERC1155Pausable,
     mapping(uint => uint8[]) courseAnswers; // courseId => answers
     mapping(uint => mapping(address => uint8[])) userAnswers; // courseId => (user => answers)
     mapping(uint => address[]) courseUsers; // courseId => array of user addresses
+
+    mapping(address => uint) votedForPause; // content mod => timestamp
+    mapping(address => uint) votedForUnpause; // content mod => timestamp
 
     constructor() ERC1155("ipfs://TODO/{id}.json") { // TODO: add initial URI
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -103,17 +105,47 @@ contract QuizKeeper is ERC1155, AccessControl, ERC1155Burnable, ERC1155Pausable,
         _setURI(newuri);
     }
 
-    function pause() public onlyRole(PAUSER_ROLE) {
-        _pause();
+    function voteForPause() external onlyRole(CONTENT_MOD_ROLE) {
+        votedForPause[msg.sender] = block.timestamp;
+
+        uint8 numVotes = 0;
+        for (uint8 i = 0; i < getRoleMemberCount(CONTENT_MOD_ROLE); i++) {
+            if (votedForPause[getRoleMember(CONTENT_MOD_ROLE, i)] > block.timestamp - 2 days) {
+                numVotes++;
+            }
+        }
+
+        // Check if at least two-thirds of the members have voted for pause
+        if (3 * numVotes >= 2 * getRoleMemberCount(CONTENT_MOD_ROLE)) {
+            _pause();
+            resetPausingMapping(votedForUnpause);
+        }
     }
 
-    function unpause() public onlyRole(PAUSER_ROLE) {
-        _unpause();
+    function voteForUnpause() external onlyRole(CONTENT_MOD_ROLE) {
+        votedForUnpause[msg.sender] = block.timestamp;
+
+        uint8 numVotes = 0;
+        for (uint8 i = 0; i < getRoleMemberCount(CONTENT_MOD_ROLE); i++) {
+            if (votedForUnpause[getRoleMember(CONTENT_MOD_ROLE, i)] > block.timestamp - 2 days) {
+                numVotes++;
+            }
+        }
+
+        // Check if at least two-thirds of the members have voted for unpause
+        if (3 * numVotes >= 2 * getRoleMemberCount(CONTENT_MOD_ROLE)) {
+            _unpause();
+            resetPausingMapping(votedForPause);
+        }
     }
 
-//    function mint(address account, uint256 id, uint256 amount, bytes memory data) public {
-//        _mint(account, id, amount, data);
-//    }
+    // After the contract was paused or unpaused we reset the state of the other mapping in case there were
+    // multiple emergency pauses within the 2 day timeframe
+    function resetPausingMapping(mapping(address => uint) storage pausingMapping) internal {
+        for (uint8 i = 0; i < getRoleMemberCount(CONTENT_MOD_ROLE); i++) {
+            pausingMapping[getRoleMember(CONTENT_MOD_ROLE, i)] = 0;
+        }
+    }
 
     // The following functions are overrides required by Solidity.
 
@@ -121,7 +153,7 @@ contract QuizKeeper is ERC1155, AccessControl, ERC1155Burnable, ERC1155Pausable,
         super._update(from, to, ids, values);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC1155, AccessControl) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC1155, AccessControlEnumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }
