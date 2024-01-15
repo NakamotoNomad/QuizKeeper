@@ -1,3 +1,5 @@
+const { COURSE_ID_MAIN } = require('./constants');
+
 async function main() {
   const QuizKeeper = await hre.ethers.getContractFactory("QuizKeeper");
 
@@ -7,9 +9,9 @@ async function main() {
 
   console.log("Deployed to:", quizKeeper.address);
 
-  await quizKeeper.addCourse(0, "Main Course");
+  await quizKeeper.addCourse(COURSE_ID_MAIN, "Main Course", 4);
 
-    console.log("Main Course added");
+  console.log("Main Course added");
 }
 
 main()

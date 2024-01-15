@@ -21,14 +21,16 @@ contract QuizKeeper is ERC1155, AccessControl, ERC1155Burnable, ERC1155Pausable,
     struct Course {
         uint id;
         string title;
+        uint8 numCorrectAnswersNeeded;
         uint uploadDate;
         uint closeDate;
     }
 
     Course[] public courses;
 
-    mapping(uint => uint[]) courseAnswers; // courseId => answers
-    mapping(uint => mapping(address => uint[])) userAnswers; // courseId => (user => answers)
+    mapping(uint => uint8[]) courseAnswers; // courseId => answers
+    mapping(uint => mapping(address => uint8[])) userAnswers; // courseId => (user => answers)
+    mapping(uint => address[]) courseUsers; // courseId => array of user addresses
 
     constructor() ERC1155("ipfs://TODO/{id}.json") { // TODO: add initial URI
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -42,24 +44,53 @@ contract QuizKeeper is ERC1155, AccessControl, ERC1155Burnable, ERC1155Pausable,
          */
     }
 
-    function addCourse(uint id, string calldata title) public onlyRole(CONTENT_MOD_ROLE) {
-        courses.push(Course({ id: id, title: title, uploadDate: block.timestamp, closeDate: 0 }));
+    function addCourse(uint id, string calldata title, uint8 numCorrectAnswersNeeded) public onlyRole(CONTENT_MOD_ROLE) {
+        courses.push(Course({ id: id, title: title, numCorrectAnswersNeeded: numCorrectAnswersNeeded, uploadDate: block.timestamp, closeDate: 0 }));
     }
 
-    function revealCourseAnswers(uint id, uint[] calldata answers) external onlyRole(CONTENT_MOD_ROLE) {
-        Course memory course = findCourse(id);
+    function revealCourseAnswers(uint id, uint8[] calldata answers) external onlyRole(CONTENT_MOD_ROLE) {
+        Course storage course = findCourseStorage(id);
+        require(answers.length >= course.numCorrectAnswersNeeded, "You need more correct answers than questions.");
         course.closeDate = block.timestamp;
         courseAnswers[id] = answers;
-        // TODO: check user answers and give out NFTs
+        for (uint8 i = 0; i < courseUsers[id].length; i++) {
+            address currentUser = courseUsers[id][i];
+            uint8 numCorrectAnswers = 0;
+            uint8[] memory currentUserAnswers = userAnswers[id][currentUser];
+            if (currentUserAnswers.length != answers.length) {
+                continue; // user provided wrong number of answers, ignoring their entry (no NFT for you!)
+            }
+            for (uint8 j = 0; j < answers.length; j++) {
+                if (answers[j] == currentUserAnswers[j]) {
+                    numCorrectAnswers++;
+                }
+            }
+            if (numCorrectAnswers >= course.numCorrectAnswersNeeded) {
+                // Congrats, course passed!
+                _mint(currentUser, id, 1, "");
+            }
+        }
     }
 
-    function submitUserAnswer(uint id, uint[] calldata answers) external {
-        Course memory course = findCourse(id);
+    function submitUserAnswer(uint id, uint8[] calldata answers) external {
+        Course memory course = findCourseMemory(id);
         require(course.closeDate < block.timestamp);
         userAnswers[id][msg.sender] = answers;
+        courseUsers[id].push(msg.sender);
     }
 
-    function findCourse(uint id) internal view returns(Course memory) {
+    // Two functions to find a course. If one needs to alter the course you need the storage option
+    // but if read-only is enough for that context one can use the memory option for better gas efficiency.
+    function findCourseMemory(uint id) internal view returns(Course memory) {
+        for (uint i = 0; i < courses.length; i++) {
+            if (courses[i].id == id) {
+                return courses[i];
+            }
+        }
+        revert CourseNotFound(id);
+    }
+
+    function findCourseStorage(uint id) internal view returns(Course storage) {
         for (uint i = 0; i < courses.length; i++) {
             if (courses[i].id == id) {
                 return courses[i];
