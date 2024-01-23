@@ -151,6 +151,49 @@ describe("QuizKeeper Contract", function () {
         });
     });
 
+    describe("Burning", function () {
+        it("Should not burn the main NFT if it was minted within the last three months", async function () {
+            await fullSetup();
+
+            await ethers.provider.send("evm_increaseTime", [60 * 60 * 24 * 80]); // 80 days
+            await ethers.provider.send("evm_mine");
+
+            await expect(quizKeeper.burnMainNFTIfInactive(user1.getAddress()))
+                .to.be.reverted;
+
+            expect(await quizKeeper.balanceOf(user1.getAddress(), 0)).to.equal(1);
+        });
+
+        it("Should burn the main NFT if the user has been inactive for more than three months", async function () {
+            await fullSetup();
+
+            await ethers.provider.send("evm_increaseTime", [60 * 60 * 24 * 100]); // 100 days
+            await ethers.provider.send("evm_mine");
+
+            await quizKeeper.burnMainNFTIfInactive(user1.address);
+
+            expect(await quizKeeper.balanceOf(user1.address, 0)).to.equal(0);
+        });
+
+        it("Should reset the inactivity timer when the user completes an update course", async function () {
+            await fullSetup();
+
+            await ethers.provider.send("evm_increaseTime", [60 * 60 * 24 * 60]); // 60 days
+            await ethers.provider.send("evm_mine");
+
+            await quizKeeper.connect(user1).submitUserAnswer(1, [1, 1, 1, 1]);
+            await quizKeeper.connect(cmod1).revealCourseAnswers(1, [1, 1, 1, 1]);
+
+            await ethers.provider.send("evm_increaseTime", [60 * 60 * 24 * 60]); // 60 days (120 days since minting main NFT)
+            await ethers.provider.send("evm_mine");
+
+            await expect(quizKeeper.burnMainNFTIfInactive(user1.address))
+                .to.be.reverted;
+
+            expect(await quizKeeper.balanceOf(user1.address, 0)).to.equal(1);
+        });
+    });
+
     describe("Pausing", function () {
         it("Should pause the contract if enough mods vote for pausing", async function () {
             await setupContentMods();

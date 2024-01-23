@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
 /// @custom:security-contact nakamotonomad@outlook.com
 contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC1155Pausable, ERC1155Supply {
 
-    bytes32 public constant URI_SETTER_ROLE = keccak256("URI_SETTER_ROLE");
     bytes32 public constant CONTENT_MOD_ROLE = keccak256("CONTENT_MOD_ROLE");
 
     uint256 public constant MAIN_ID = 0;
@@ -24,6 +23,8 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
         uint uploadDate;
         uint closeDate;
     }
+
+    event MainNFTMinted(address indexed user);
 
     modifier fiveAnswers(uint8[] calldata answers) {
         require(answers.length == 5);
@@ -44,6 +45,7 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
 
     mapping(address => uint8[]) private mainCourseUserAnswers;
     address[] private mainCourseUsers;
+    mapping(address => uint) public mainNFTMintTimestamps;
 
     mapping(uint => uint8[]) courseAnswers; // courseId => answers
     mapping(uint => mapping(address => uint8[])) userAnswers; // courseId => (user => answers)
@@ -72,6 +74,8 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
             if (numCorrectAnswers >= 4) {
                 // Congrats, course passed!
                 _mint(mainCourseUsers[i], MAIN_ID, 1, "");
+                mainNFTMintTimestamps[mainCourseUsers[i]] = block.timestamp;
+                emit MainNFTMinted(mainCourseUsers[i]);
             }
             delete mainCourseUserAnswers[mainCourseUsers[i]];
         }
@@ -102,18 +106,18 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
         }
     }
 
+    function submitMainCourseUserAnswer(uint8[] calldata answers) external fiveAnswers(answers) {
+        require(mainCourseUserAnswers[msg.sender].length == 0, "User has already submitted answers");
+        mainCourseUserAnswers[msg.sender] = answers;
+        mainCourseUsers.push(msg.sender);
+    }
+
     function submitUserAnswer(uint8 id, uint8[] calldata answers) external notMainCourse(id) onlyWithMainNft(msg.sender) {
         require(userAnswers[id][msg.sender].length == 0, "User has already submitted answers");
         Course memory course = findCourseMemory(id);
         require(course.closeDate > block.timestamp);
         userAnswers[id][msg.sender] = answers;
         courseUsers[id].push(msg.sender);
-    }
-
-    function submitMainCourseUserAnswer(uint8[] calldata answers) external fiveAnswers(answers) {
-        require(mainCourseUserAnswers[msg.sender].length == 0, "User has already submitted answers");
-        mainCourseUserAnswers[msg.sender] = answers;
-        mainCourseUsers.push(msg.sender);
     }
 
     // Two functions to find a course. If one needs to alter the course you need the storage option
@@ -136,7 +140,28 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
         revert CourseNotFound(id);
     }
 
-    function setURI(string memory newuri) public onlyRole(URI_SETTER_ROLE) {
+    // Note: there is no access control for this function, anyone can burn other peoples NFTs in case the housekeeping
+    // script isn't running.
+    function burnMainNFTIfInactive(address user) public {
+        uint threeMonthsAgo = block.timestamp - 90 days;
+        bool isActive = mainNFTMintTimestamps[user] > threeMonthsAgo;
+
+        if (!isActive) {
+            for (uint i = 0; i < updateCourses.length; i++) {
+                uint256 courseId = updateCourses[i].id;
+                if (updateCourses[i].closeDate > threeMonthsAgo && balanceOf(user, courseId) > 0) {
+                    isActive = true;
+                    break;
+                }
+            }
+        }
+
+        require(!isActive, "User is active in the last three months");
+
+        _burn(user, MAIN_ID, 1);
+    }
+
+    function setURI(string memory newuri) public onlyRole(DEFAULT_ADMIN_ROLE) {
         _setURI(newuri);
     }
 
