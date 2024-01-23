@@ -1,11 +1,11 @@
-const { CONTRACT_ADDRESS, COURSE_ID_MAIN, ADDRESS_USER1 } = require('./constants');
+const { CONTRACT_ADDRESS } = require('./constants');
 
 async function main() {
     const QuizKeeper = await hre.ethers.getContractFactory("QuizKeeper");
 
     const quizKeeper = QuizKeeper.attach(CONTRACT_ADDRESS);
 
-    const tx = await quizKeeper.revealCourseAnswers(COURSE_ID_MAIN, [1, 3, 0, 3, 1]);
+    const tx = await quizKeeper.revealMainCourseAnswers([1, 3, 0, 3, 1]);
     await tx.wait();
     console.log("Course Answers submitted");
 }

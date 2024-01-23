@@ -8,10 +8,6 @@ async function main() {
   await quizKeeper.deployed();
 
   console.log("Deployed to:", quizKeeper.address);
-
-  await quizKeeper.addCourse(COURSE_ID_MAIN, "Main Course", 4);
-
-  console.log("Main Course added");
 }
 
 main()
