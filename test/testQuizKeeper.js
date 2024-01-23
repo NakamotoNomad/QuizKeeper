@@ -31,9 +31,12 @@ describe("QuizKeeper Contract", function () {
 
     async function fullSetup() {
         await setupContentMods();
-        await quizKeeper.addCourse(0, "Main Course", 4);
         await quizKeeper.addCourse(1, "December 2023: Ledger Hack", 3);
         await quizKeeper.addCourse(2, "January 2024: TUSD depeg", 2);
+        await quizKeeper.connect(user1).submitMainCourseUserAnswer([0, 2, 2, 3, 1]);
+        await quizKeeper.connect(user2).submitMainCourseUserAnswer([0, 2, 2, 3, 1]);
+        await quizKeeper.connect(user3).submitMainCourseUserAnswer([0, 2, 2, 3, 1]);
+        await quizKeeper.connect(cmod1).revealMainCourseAnswers([0, 2, 2, 3, 1]);
     }
 
     describe("Deployment", function () {
@@ -51,14 +54,14 @@ describe("QuizKeeper Contract", function () {
             const timestampSeconds = currentBlock.timestamp + 12;
             await network.provider.send("evm_setNextBlockTimestamp", [timestampSeconds]);
 
-            await quizKeeper.addCourse(0, "Main Course", 4); // this automatically mines the next block, no need for sending evm_mine
+            await quizKeeper.addCourse(1, "First Update Course", 4); // this automatically mines the next block, no need for sending evm_mine
 
-            const course = await quizKeeper.courses(0 /* Note: this is the index, not id */);
-            expect(course.title).to.equal("Main Course");
-            expect(course.id).to.equal(0);
+            const course = await quizKeeper.updateCourses(0 /* Note: this is the index, not id */);
+            expect(course.title).to.equal("First Update Course");
+            expect(course.id).to.equal(1);
             expect(course.numCorrectAnswersNeeded).to.equal(4);
             expect(course.uploadDate).to.equal(timestampSeconds);
-            expect(course.closeDate).to.equal(0);
+            expect(course.closeDate).to.equal(ethers.constants.MaxUint256);
         });
 
         it("Should allow a content mods to be assigned and add courses", async function () {
@@ -69,17 +72,17 @@ describe("QuizKeeper Contract", function () {
 
         it("Should prevent a random user to add a course", async function () {
             await setupContentMods();
-            expect(quizKeeper.connect(user1).addCourse(123, "User course", 42)).to.be.reverted;
+            await expect(quizKeeper.connect(user1).addCourse(123, "User course", 42)).to.be.reverted;
         });
 
         it("Should allow a content mods to reveal course answers", async function () {
             await fullSetup();
-            await quizKeeper.connect(cmod1).revealCourseAnswers(0, [0, 1, 2, 3, 4]);
+            await quizKeeper.connect(cmod1).revealCourseAnswers(1, [0, 1, 2, 3]);
         });
 
         it("Should prevent a random user to reveal course answers", async function () {
             await fullSetup();
-            expect(quizKeeper.connect(user1).revealCourseAnswers(0, [0, 1, 2, 3, 4])).to.be.reverted;
+            await expect(quizKeeper.connect(user1).revealCourseAnswers(1, [0, 1, 2, 3])).to.be.reverted;
         });
 
         it("Should ignore answers where the number of answers provided don't match the number of questions", async function () {
@@ -110,7 +113,41 @@ describe("QuizKeeper Contract", function () {
             await fullSetup();
             await quizKeeper.connect(cmod1).revealCourseAnswers(1, [0, 2, 1, 1]);
 
-            expect(quizKeeper.connect(user1).submitUserAnswer(1, [0, 2, 1, 1])).to.be.reverted;
+            await expect(quizKeeper.connect(user1).submitUserAnswer(1, [0, 2, 1, 1])).to.be.reverted;
+        });
+
+        it("Should prevent answering update courses without having passed the main course", async function () {
+            await setupContentMods();
+            await quizKeeper.connect(cmod1).addCourse(1, "December 2023: Ledger Hack", 3);
+            await expect(quizKeeper.connect(user1).submitUserAnswer(1, [0, 2, 1, 1])).to.be.reverted;
+        });
+
+        it("Should support multiple rounds of answers for the main course", async function () {
+            await setupContentMods();
+
+            // First round
+            await quizKeeper.connect(user1).submitMainCourseUserAnswer([0, 2, 2, 3, 1]); // all correct, pass
+            await quizKeeper.connect(cmod1).revealMainCourseAnswers([0, 2, 2, 3, 1]);
+            expect(await quizKeeper.balanceOf(user1.getAddress(), 0)).to.equal(1);
+
+            // Second round
+            await quizKeeper.connect(user2).submitMainCourseUserAnswer([0, 2, 2, 3, 1]); // 2/5 (answers from first round), fail
+            await quizKeeper.connect(user3).submitMainCourseUserAnswer([2, 2, 3, 1, 3]); // 4/5, pass
+            await quizKeeper.connect(cmod1).revealMainCourseAnswers([2, 2, 3, 1, 1]);
+            expect(await quizKeeper.balanceOf(user2.getAddress(), 0)).to.equal(0);
+            expect(await quizKeeper.balanceOf(user3.getAddress(), 0)).to.equal(1);
+        });
+
+        it("Should prevent answering the main course multiple times", async function () {
+            await setupContentMods();
+            await quizKeeper.connect(user1).submitMainCourseUserAnswer([0, 0, 0, 0, 0]);
+            await expect(quizKeeper.connect(user1).submitMainCourseUserAnswer([0, 0, 0, 0, 1])).to.be.reverted;
+        });
+
+        it("Should prevent answering update courses multiple times", async function () {
+            await fullSetup();
+            await quizKeeper.connect(user1).submitUserAnswer(1, [0, 0, 0, 0]);
+            await expect(quizKeeper.connect(user1).submitUserAnswer(1, [0, 0, 0, 1])).to.be.reverted;
         });
     });
 
@@ -150,7 +187,7 @@ describe("QuizKeeper Contract", function () {
 
         it("Should prevent a random user from voting for pausing", async function () {
             await setupContentMods();
-            expect(quizKeeper.connect(user1).voteForPause()).to.be.reverted;
+            await expect(quizKeeper.connect(user1).voteForPause()).to.be.reverted;
         });
     });
 });

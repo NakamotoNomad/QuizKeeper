@@ -18,14 +18,32 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
     error CourseNotFound(uint id);
 
     struct Course {
-        uint id;
+        uint8 id;
         string title;
         uint8 numCorrectAnswersNeeded;
         uint uploadDate;
         uint closeDate;
     }
 
-    Course[] public courses;
+    modifier fiveAnswers(uint8[] calldata answers) {
+        require(answers.length == 5);
+        _;
+    }
+
+    modifier notMainCourse(uint8 id) {
+        require(id != 0);
+        _;
+    }
+
+    modifier onlyWithMainNft(address user) {
+        require(balanceOf(msg.sender, MAIN_ID) > 0, "Caller does not own the main NFT");
+        _;
+    }
+
+    Course[] public updateCourses;
+
+    mapping(address => uint8[]) private mainCourseUserAnswers;
+    address[] private mainCourseUsers;
 
     mapping(uint => uint8[]) courseAnswers; // courseId => answers
     mapping(uint => mapping(address => uint8[])) userAnswers; // courseId => (user => answers)
@@ -37,20 +55,30 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
     constructor() ERC1155("ipfs://TODO/{id}.json") { // TODO: add initial URI
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(CONTENT_MOD_ROLE, msg.sender);
-        /*
-         TODO: how to handle initial course as that can't be closed after revealing the answers?
-         Option 1: Change around the sequence of answers for the main course every month so previous results can't be copied.
-         Option 2: New role for minting the main NFT. Then the user can't answer the questions directly over the smart
-         contract but is forced to use the webapp. If the webapp validates the answers as correct it mints and sends
-         the NFT to the user.
-         */
     }
 
-    function addCourse(uint id, string calldata title, uint8 numCorrectAnswersNeeded) public onlyRole(CONTENT_MOD_ROLE) {
-        courses.push(Course({ id: id, title: title, numCorrectAnswersNeeded: numCorrectAnswersNeeded, uploadDate: block.timestamp, closeDate: 0 }));
+    function addCourse(uint8 id, string calldata title, uint8 numCorrectAnswersNeeded) public onlyRole(CONTENT_MOD_ROLE) notMainCourse(id) {
+        updateCourses.push(Course({id: id, title: title, numCorrectAnswersNeeded: numCorrectAnswersNeeded, uploadDate: block.timestamp, closeDate: type(uint256).max}));
     }
 
-    function revealCourseAnswers(uint id, uint8[] calldata answers) external onlyRole(CONTENT_MOD_ROLE) {
+    function revealMainCourseAnswers(uint8[] calldata answers) external onlyRole(CONTENT_MOD_ROLE) fiveAnswers(answers) {
+        for (uint8 i = 0; i < mainCourseUsers.length; i++) {
+            uint8 numCorrectAnswers = 0;
+            for (uint8 j = 0; j < answers.length; j++) {
+                if (answers[j] == mainCourseUserAnswers[mainCourseUsers[i]][j]) {
+                    numCorrectAnswers++;
+                }
+            }
+            if (numCorrectAnswers >= 4) {
+                // Congrats, course passed!
+                _mint(mainCourseUsers[i], MAIN_ID, 1, "");
+            }
+            delete mainCourseUserAnswers[mainCourseUsers[i]];
+        }
+        delete mainCourseUsers;
+    }
+
+    function revealCourseAnswers(uint8 id, uint8[] calldata answers) external onlyRole(CONTENT_MOD_ROLE) notMainCourse(id) {
         Course storage course = findCourseStorage(id);
         require(answers.length >= course.numCorrectAnswersNeeded, "You need more correct answers than questions.");
         course.closeDate = block.timestamp;
@@ -68,34 +96,41 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
                 }
             }
             if (numCorrectAnswers >= course.numCorrectAnswersNeeded) {
-                // Congrats, course passed!
+                // Congrats, main course passed!
                 _mint(currentUser, id, 1, "");
             }
         }
     }
 
-    function submitUserAnswer(uint id, uint8[] calldata answers) external {
+    function submitUserAnswer(uint8 id, uint8[] calldata answers) external notMainCourse(id) onlyWithMainNft(msg.sender) {
+        require(userAnswers[id][msg.sender].length == 0, "User has already submitted answers");
         Course memory course = findCourseMemory(id);
-        require(course.closeDate < block.timestamp);
+        require(course.closeDate > block.timestamp);
         userAnswers[id][msg.sender] = answers;
         courseUsers[id].push(msg.sender);
     }
 
+    function submitMainCourseUserAnswer(uint8[] calldata answers) external fiveAnswers(answers) {
+        require(mainCourseUserAnswers[msg.sender].length == 0, "User has already submitted answers");
+        mainCourseUserAnswers[msg.sender] = answers;
+        mainCourseUsers.push(msg.sender);
+    }
+
     // Two functions to find a course. If one needs to alter the course you need the storage option
     // but if read-only is enough for that context one can use the memory option for better gas efficiency.
-    function findCourseMemory(uint id) internal view returns(Course memory) {
-        for (uint i = 0; i < courses.length; i++) {
-            if (courses[i].id == id) {
-                return courses[i];
+    function findCourseMemory(uint8 id) internal view returns (Course memory) {
+        for (uint i = 0; i < updateCourses.length; i++) {
+            if (updateCourses[i].id == id) {
+                return updateCourses[i];
             }
         }
         revert CourseNotFound(id);
     }
 
-    function findCourseStorage(uint id) internal view returns(Course storage) {
-        for (uint i = 0; i < courses.length; i++) {
-            if (courses[i].id == id) {
-                return courses[i];
+    function findCourseStorage(uint8 id) internal view returns (Course storage) {
+        for (uint i = 0; i < updateCourses.length; i++) {
+            if (updateCourses[i].id == id) {
+                return updateCourses[i];
             }
         }
         revert CourseNotFound(id);
