@@ -41,13 +41,17 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
         _;
     }
 
+    modifier onlyWithoutMainNft(address user) {
+        require(balanceOf(msg.sender, MAIN_ID) < 1, "Caller already owns the main NFT");
+        _;
+    }
+
     Course[] public updateCourses;
 
     mapping(address => uint8[]) private mainCourseUserAnswers;
     address[] private mainCourseUsers;
     mapping(address => uint) public mainNFTMintTimestamps;
 
-    mapping(uint => uint8[]) courseAnswers; // courseId => answers
     mapping(uint => mapping(address => uint8[])) userAnswers; // courseId => (user => answers)
     mapping(uint => address[]) courseUsers; // courseId => array of user addresses
 
@@ -86,7 +90,6 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
         Course storage course = findCourseStorage(id);
         require(answers.length >= course.numCorrectAnswersNeeded, "You need more correct answers than questions.");
         course.closeDate = block.timestamp;
-        courseAnswers[id] = answers;
         for (uint8 i = 0; i < courseUsers[id].length; i++) {
             address currentUser = courseUsers[id][i];
             uint8 numCorrectAnswers = 0;
@@ -106,7 +109,7 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
         }
     }
 
-    function submitMainCourseUserAnswer(uint8[] calldata answers) external fiveAnswers(answers) {
+    function submitMainCourseUserAnswer(uint8[] calldata answers) external fiveAnswers(answers) onlyWithoutMainNft(msg.sender) {
         require(mainCourseUserAnswers[msg.sender].length == 0, "User has already submitted answers");
         mainCourseUserAnswers[msg.sender] = answers;
         mainCourseUsers.push(msg.sender);

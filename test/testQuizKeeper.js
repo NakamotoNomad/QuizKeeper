@@ -138,9 +138,16 @@ describe("QuizKeeper Contract", function () {
             expect(await quizKeeper.balanceOf(user3.getAddress(), 0)).to.equal(1);
         });
 
-        it("Should prevent answering the main course multiple times", async function () {
+        it("Should prevent answering the main course multiple times in one round", async function () {
             await setupContentMods();
             await quizKeeper.connect(user1).submitMainCourseUserAnswer([0, 0, 0, 0, 0]);
+            await expect(quizKeeper.connect(user1).submitMainCourseUserAnswer([0, 0, 0, 0, 1])).to.be.reverted;
+        });
+
+        it("Should prevent answering the main course if already owning the main NFT (can't own multiple main NFTs)", async function () {
+            await setupContentMods();
+            await quizKeeper.connect(user1).submitMainCourseUserAnswer([0, 2, 2, 3, 1]);
+            await quizKeeper.connect(cmod1).revealMainCourseAnswers([0, 2, 2, 3, 1]);
             await expect(quizKeeper.connect(user1).submitMainCourseUserAnswer([0, 0, 0, 0, 1])).to.be.reverted;
         });
 
