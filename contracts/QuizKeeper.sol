@@ -110,13 +110,13 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
     }
 
     function submitMainCourseUserAnswer(uint8[] calldata answers) external fiveAnswers(answers) onlyWithoutMainNft(msg.sender) {
-        require(mainCourseUserAnswers[msg.sender].length == 0, "User has already submitted answers");
+        require(!answersSubmitted(0, msg.sender), "User has already submitted answers");
         mainCourseUserAnswers[msg.sender] = answers;
         mainCourseUsers.push(msg.sender);
     }
 
     function submitUserAnswer(uint8 id, uint8[] calldata answers) external notMainCourse(id) onlyWithMainNft(msg.sender) {
-        require(userAnswers[id][msg.sender].length == 0, "User has already submitted answers");
+        require(!answersSubmitted(id, msg.sender), "User has already submitted answers");
         Course memory course = findCourseMemory(id);
         require(course.closeDate > block.timestamp);
         userAnswers[id][msg.sender] = answers;
@@ -208,6 +208,13 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
         for (uint8 i = 0; i < getRoleMemberCount(CONTENT_MOD_ROLE); i++) {
             pausingMapping[getRoleMember(CONTENT_MOD_ROLE, i)] = 0;
         }
+    }
+
+    function answersSubmitted(uint8 id, address addr) view public returns(bool) {
+        if (id == MAIN_ID) {
+            return mainCourseUserAnswers[addr].length != 0;
+        }
+        return userAnswers[id][addr].length != 0;
     }
 
     // The following functions are overrides required by Solidity.

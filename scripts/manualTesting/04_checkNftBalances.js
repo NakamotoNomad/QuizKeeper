@@ -1,4 +1,4 @@
-const { CONTRACT_ADDRESS, COURSE_ID_MAIN, ADDRESS_USER1, ADDRESS_USER2, ADDRESS_USER3 } = require('./constants');
+const { CONTRACT_ADDRESS, COURSE_ID_MAIN, ADDRESS_USER1, ADDRESS_USER2, ADDRESS_USER3 } = require('../constants');
 
 async function main() {
     const accounts = [

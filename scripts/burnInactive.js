@@ -1,5 +1,12 @@
 const {CONTRACT_ADDRESS, COURSE_ID_MAIN} = require("./constants");
 
+/*
+This is the housekeeping script that should be run periodically to burn the NFT from users who aren't keeping up to date
+with the newest security courses.
+It should be run with as a cron job (but anyone can burn the NFTs for other users too if they were inactive in case this
+script isn't run periodically).
+*/
+
 async function main() {
     const QuizKeeper = await hre.ethers.getContractFactory("QuizKeeper");
     const quizKeeper = await QuizKeeper.attach(CONTRACT_ADDRESS);

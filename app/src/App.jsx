@@ -4,11 +4,13 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import Web3Modal from "web3modal";
 import {ethers} from "ethers";
 
+import { BlockchainProvider } from './contexts/BlockchainContext';
 import CourseModule from './components/CourseModule';
 import CourseOverview from "./components/CourseOverview";
 import Header from './components/Header';
 import Home from './components/Home';
 import Quiz from './components/Quiz';
+import Profile from "./components/Profile";
 
 const providerOptions = {
     walletconnect: {
@@ -24,7 +26,7 @@ const providerOptions = {
 let web3Modal;
 if (typeof window !== 'undefined') {
     web3Modal = new Web3Modal({
-        network: "goerli",
+        network: "localhost",
         cacheProvider: true,
         providerOptions
     });
@@ -67,16 +69,19 @@ function App() {
     };
 
     return (
-        <Router>
-            <Header userWalletAddress={userWalletAddress} connectWallet={connectWallet} disconnectWallet={disconnectWallet} />
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/course" element={<CourseOverview />} />
-                <Route path="/course/:moduleId" element={<CourseModule />} />
-                <Route path="/quiz/:moduleId" element={<Quiz />} />
-                <Route path="*" element={<h2>404 Not Found</h2>} />
-            </Routes>
-        </Router>
+        <BlockchainProvider>
+            <Router>
+                <Header userWalletAddress={userWalletAddress} connectWallet={connectWallet} disconnectWallet={disconnectWallet} />
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/course" element={<CourseOverview />} />
+                    <Route path="/course/:moduleId" element={<CourseModule />} />
+                    <Route path="/quiz/:moduleId" element={<Quiz />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="*" element={<h2>404 Not Found</h2>} />
+                </Routes>
+            </Router>
+        </BlockchainProvider>
     );
 }
 

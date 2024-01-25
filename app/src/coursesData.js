@@ -1,6 +1,6 @@
 const coursesData = [
     {
-        id: 'main',
+        id: '0',
         title: 'Main course',
         description: 'The main course to learn about Web3 security and receive the initial NFT.',
         logo: 'logo.png',
@@ -88,29 +88,59 @@ Web3 gives you a real chance to be your own custodian and take control of your a
 For those interested in trying self-custody for the first time, or those looking for Brave-level protection in their wallet, try Brave Wallet. It’s a browser-native wallet that raises the bar for privacy and security in crypto self-custody.`,
         quiz: [
             {
-                id: 'q1',
+                id: '0',
                 text: 'What is the primary purpose of blockchain technology?',
                 options: [
-                    { id: 'a', text: 'Data storage' },
-                    { id: 'b', text: 'Decentralized transactions' },
-                    { id: 'c', text: 'Gaming' },
-                    { id: 'd', text: 'Social media' },
+                    { id: '0', text: 'Data storage' },
+                    { id: '1', text: 'Decentralized transactions' },
+                    { id: '2', text: 'Gaming' },
+                    { id: '3', text: 'Social media' },
                 ],
             },
             {
-                id: 'q2',
+                id: '1',
                 text: 'Which of the following is a concept in Web3 security?',
                 options: [
-                    { id: 'a', text: 'Ninja attacks' },
-                    { id: 'b', text: 'Alpaca attacks' },
-                    { id: 'c', text: 'Sandwich attacks' },
-                    { id: 'd', text: 'Peanut butter and jelly sandwiches' },
+                    { id: '0', text: 'Ninja attacks' },
+                    { id: '1', text: 'Alpaca attacks' },
+                    { id: '2', text: 'Sandwich attacks' },
+                    { id: '3', text: 'Peanut butter and jelly sandwiches' },
+                ],
+            },
+            {
+                id: '2',
+                text: 'Which of the following best describes a 51% attack in blockchain?',
+                options: [
+                    { id: '0', text: 'A DDoS attack on the network' },
+                    { id: '1', text: 'A single entity gaining control of over 50% of the network\'s mining power' },
+                    { id: '2', text: 'An attack that steals 51% of a cryptocurrency' },
+                    { id: '3', text: 'A phishing attack targeting 51 individuals' },
+                ],
+            },
+            {
+                id: '3',
+                text: 'What is the primary purpose of using cryptographic hash functions in blockchain technology?',
+                options: [
+                    { id: '0', text: 'To encrypt data' },
+                    { id: '1', text: 'To validate transactions' },
+                    { id: '2', text: 'To generate wallet addresses' },
+                    { id: '3', text: 'To create digital signatures' },
+                ],
+            },
+            {
+                id: '4',
+                text: 'What is the purpose of a Merkle Tree in blockchain technology?',
+                options: [
+                    { id: '0', text: 'To increase transaction speed' },
+                    { id: '1', text: 'To provide cryptographic proof of data integrity' },
+                    { id: '2', text: 'To store users\' private keys' },
+                    { id: '3', text: 'To facilitate peer-to-peer connections' },
                 ],
             },
         ],
     },
     {
-        id: 'update20231201',
+        id: '1',
         title: 'December 2023 update',
         description: 'Learn about the Ledger hack.',
         logo: 'LedgerLogo.png',
@@ -137,13 +167,33 @@ Tether, the largest stablecoin issuer, for instance, announced it froze the expl
 So, is it too soon to laugh about it? Just last week, CoinDesk listed Ledger CEO Pascal Gauthier and several of the impacted DeFi protocols on its annual Most Influential list — perhaps we can laugh about the inauspicious timing. But that’s the thing about open-source development that happens in the public eye, even the worst moments can hold valuable lessons for all. On social media, the breach has become an occasion to joke, condemn and learn:`,
         quiz: [
             {
-                id: 'q1',
-                text: 'Which of the following could the Ledger hack affect?',
+                id: '0',
+                text: 'What was the main reason for the compromise of Ethereum-based applications like Zapper, SushiSwap, and others?',
                 options: [
-                    { id: 'a', text: 'Ledger Hardware Wallets' },
-                    { id: 'b', text: 'Software Wallets' },
-                    { id: 'c', text: 'Hardware Wallets by other vendors' },
-                    { id: 'd', text: 'All of the above' },
+                    { id: '0', text: 'Phishing attacks' },
+                    { id: '1', text: 'A Ledger security breach' },
+                    { id: '2', text: 'Weak smart contract coding' },
+                    { id: '3', text: 'User error' },
+                ],
+            },
+            {
+                id: '1',
+                text: 'How did Ledger, the crypto hardware wallet manufacturer, advise users to ensure safe transactions after the breach?',
+                options: [
+                    { id: '0', text: 'Reset their hardware wallets' },
+                    { id: '1', text: 'Change their wallet passwords' },
+                    { id: '2', text: 'Use two-factor authentication' },
+                    { id: '3', text: '“Clear Sign” transactions' },
+                ],
+            },
+            {
+                id: '2',
+                text: 'What type of attack was primarily responsible for the security breach in Ledger\'s Connect Kit?',
+                options: [
+                    { id: '0', text: 'Ransomware attack' },
+                    { id: '1', text: 'Supply chain attack' },
+                    { id: '2', text: 'Man-in-the-middle attack' },
+                    { id: '3', text: 'SQL injection' },
                 ],
             },
         ],

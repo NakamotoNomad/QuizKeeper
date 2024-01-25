@@ -1,4 +1,4 @@
-const { CONTRACT_ADDRESS } = require('./constants');
+const { CONTRACT_ADDRESS } = require('../constants');
 
 async function main() {
     const QuizKeeper = await hre.ethers.getContractFactory("QuizKeeper");
