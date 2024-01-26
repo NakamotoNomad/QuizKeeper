@@ -12,12 +12,14 @@ function CourseModule() {
     };
 
     return (
-        <div>
+        <div className="container mt-4">
             {course ? (
                 <div>
-                    <h1>Course Module: {course.title}</h1>
-                    <div dangerouslySetInnerHTML={createMarkup(course.content)}/>
-                    <Link to={`/quiz/${moduleId}`}>Go to quiz</Link>
+                    <h1 className="mb-4">{course.title}</h1>
+                    <div className="mb-4" dangerouslySetInnerHTML={createMarkup(course.content)} />
+                    <div className="d-flex justify-content-center">
+                        <Link to={`/quiz/${moduleId}`} className="btn btn-primary mb-4">Go to quiz</Link>
+                    </div>
                 </div>
             ) : (
                 <div>

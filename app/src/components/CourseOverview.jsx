@@ -3,21 +3,23 @@ import {Link, useParams} from 'react-router-dom';
 import coursesData from '../coursesData';
 
 function CourseOverview() {
-    const { moduleId } = useParams();
-    const course = coursesData.find(c => c.id === moduleId);
-
     return (
-        <div>
-            <h1>Courses</h1>
-            {coursesData.map((course) => (
-                <div key={course.id}>
-                    <Link to={course.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <img src={course.logo} alt="Course Logo" style={{height: '100px'}}/>
-                        <h2>{course.title}</h2>
-                        <p>{course.description}</p>
-                    </Link>
-                </div>
-            ))}
+        <div className="container mt-4">
+            <h1 className="text-center mb-4">Courses</h1>
+            <div className="row">
+                {coursesData.map((course) => (
+                    <div key={course.id} className="col-md-4 mb-3">
+                        <div className="card">
+                            <img src={course.logo} className="card-img-top img-fluid" alt="Course Logo" style={{objectFit: 'cover', height: '200px'}}/>
+                            <div className="card-body">
+                                <h5 className="card-title">{course.title}</h5>
+                                <p className="card-text">{course.description}</p>
+                                <Link to={course.id} className="btn btn-primary">Start course</Link>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }

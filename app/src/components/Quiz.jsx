@@ -84,26 +84,27 @@ const Quiz = () => {
     };
 
     return (
-        <div>
-            <h2>Quiz</h2>
+        <div className="container mt-4">
+            <h2 className="text-center mb-4">Quiz</h2>
             {userOwnsNft ? (
-                <div>
+                <div className="text-center">
                     <p>You already own the NFT for this course :)</p>
-                    <Link to="/">Home</Link>
+                    <Link to="/" className="btn btn-primary">Home</Link>
                 </div>
             ) : userAnsweredQuiz ? (
-                <div>
+                <div className="text-center">
                     <p>You already filled out this quiz.</p>
-                    <Link to="/">Home</Link>
+                    <Link to="/" className="btn btn-primary">Home</Link>
                 </div>
             ) : (
                 <form onSubmit={handleSubmit}>
                     {questions.map((question) => (
-                        <div key={question.id}>
-                            <p>{question.text}</p>
+                        <div key={question.id} className="mb-3">
+                            <p><strong>{question.text}</strong></p>
                             {question.options.map((option) => (
-                                <div key={option.id}>
+                                <div key={option.id} className="form-check">
                                     <input
+                                        className="form-check-input"
                                         type="radio"
                                         id={`${question.id}-${option.id}`}
                                         name={question.id}
@@ -111,15 +112,19 @@ const Quiz = () => {
                                         checked={answers[question.id] === option.id}
                                         onChange={() => handleOptionChange(question.id, option.id)}
                                     />
-                                    <label htmlFor={`${question.id}-${option.id}`}>{option.text}</label>
+                                    <label className="form-check-label" htmlFor={`${question.id}-${option.id}`}>
+                                        {option.text}
+                                    </label>
                                 </div>
                             ))}
                         </div>
                     ))}
-                    <button type="submit">Submit Quiz</button>
+                    <div className="text-center">
+                        <button type="submit" className="btn btn-primary mb-4">Submit Quiz</button>
+                    </div>
                 </form>
             )}
-            <ToastContainer/>
+            <ToastContainer />
         </div>
     );
 };

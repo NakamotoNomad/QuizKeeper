@@ -49,14 +49,22 @@ function Profile() {
     }, []);
 
     return (
-        <div>
-            <h1>Your Profile</h1>
-            <p>You have collected the following NFTs:</p>
-            <ul>
+        <div className="container mt-4">
+            <h1 className="text-center mb-4">Your Profile</h1>
+            <p className="text-center mb-4">You have collected the following NFTs:</p>
+            <div className="row">
                 {nfts.map(nft => (
-                    <li key={nft.id}>{nft.title} ({nft.id})</li>
+                    <div key={nft.id} className="col-md-4 mb-3">
+                        <div className="card">
+                            {/* TODO: add NFT image */}
+                            <div className="card-body">
+                                <h5 className="card-title">{nft.title}</h5>
+                                <p className="card-text">ID: {nft.id}</p>
+                            </div>
+                        </div>
+                    </div>
                 ))}
-            </ul>
+            </div>
         </div>
     );
 }

@@ -3,22 +3,22 @@ import { Link } from 'react-router-dom';
 
 const Header = ({ userWalletAddress, connectWallet, disconnectWallet }) => {
     return (
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
-            <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <nav className="navbar navbar-expand-lg navbar-light">
+            <Link to="/" className="navbar-brand">
                 <img src="/logo.png" alt="Quiz Keeper Logo" style={{ height: '50px' }} />
-                <span>Quiz Keeper</span>
+                Quiz Keeper
             </Link>
-            <div>
+            <div className="d-flex justify-content-end flex-grow-1 pe-3">
                 {userWalletAddress ? (
-                    <div>
-                        <span>{userWalletAddress}</span>
-                        <button onClick={disconnectWallet}>Disconnect</button>
+                    <div className="d-flex align-items-center">
+                        <span className="me-3">{userWalletAddress}</span>
+                        <button onClick={disconnectWallet} className="btn btn-outline-danger">Disconnect</button>
                     </div>
                 ) : (
-                    <button onClick={connectWallet}>Connect Wallet</button>
+                    <button onClick={connectWallet} className="btn btn-outline-primary">Connect Wallet</button>
                 )}
             </div>
-        </header>
+        </nav>
     );
 };
 
