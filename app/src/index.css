@@ -1,9 +1,31 @@
 :root {
-  --bs-primary: #0056b3;
+  --bs-primary: #0F264F;
+}
+
+body {
+  background-color: #ECF4FB;
 }
 
 .navbar-light {
-  background-color: #f8f9fa;
+  background-color: #263250;
+  color: #ECF4FB;
+}
+
+.navbar-brand {
+  color: #ECF4FB;
+}
+
+.navbar-brand:focus {
+  color: #ECF4FB;
+}
+
+.navbar-brand:hover {
+  color: #7DADDA;
+}
+
+nav img {
+  height: 50px;
+  border-radius: 25%;
 }
 
 .btn-primary {
@@ -11,13 +33,23 @@
   border-color: var(--bs-primary);
 }
 
-.btn-outline-primary {
-  color: var(--bs-primary);
-  border-color: var(--bs-primary);
+.btn-outline-login {
+  color: #ECF4FB;
+  border-color: #ECF4FB;
 }
 
-.btn-outline-primary:hover {
-  background-color: var(--bs-primary);
+.btn-outline-login:hover {
+  background-color: #006312;
+  color: #fff;
+}
+
+.btn-outline-logout {
+  color: #ECF4FB;
+  border-color: #ECF4FB;
+}
+
+.btn-outline-logout:hover {
+  background-color: #a13f3f;
   color: #fff;
 }
 
@@ -28,4 +60,16 @@
 .card-header {
   background-color: var(--bs-primary);
   color: #fff;
+}
+
+.position-absolute {
+  position: absolute;
+}
+
+.badge-success {
+  background-color: #28a745;
+}
+
+.badge-info {
+  background-color: #6C757D;
 }

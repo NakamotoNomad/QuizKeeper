@@ -58,7 +58,7 @@ contract QuizKeeper is ERC1155, AccessControlEnumerable, ERC1155Burnable, ERC115
     mapping(address => uint) votedForPause; // content mod => timestamp
     mapping(address => uint) votedForUnpause; // content mod => timestamp
 
-    constructor() ERC1155("ipfs://TODO/{id}.json") { // TODO: add initial URI
+    constructor() ERC1155("http://localhost:3000/metadata/{id}.json") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(CONTENT_MOD_ROLE, msg.sender);
     }
