@@ -73,3 +73,9 @@ nav img {
 .badge-info {
   background-color: #6C757D;
 }
+
+.img-main {
+  height: 300px;
+  border-radius: 15%;
+  border: 5px solid black;
+}

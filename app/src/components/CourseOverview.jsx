@@ -6,10 +6,15 @@ import {useBlockchain} from "../contexts/BlockchainContext";
 function CourseOverview() {
     const { contract, address } = useBlockchain();
     const [ownedNfts, setOwnedNfts] = useState([]);
-    const [quizAnswered, setQuizAnswered] = useState([]);
+    const [quizAnswered, setQuizAnswered] = useState([]); // TODO: also check closeDate of course and have third state for failed courses instead of displaying that as an answered quiz
 
     useEffect(() => {
         const checkNftOwnerships = async () => {
+            if (!contract || !address) {
+                setOwnedNfts([]);
+                return;
+            }
+
             try {
                 let nfts = [];
                 for (let course of coursesData) {
@@ -24,13 +29,16 @@ function CourseOverview() {
             }
         };
 
-        if (contract && address) {
-            checkNftOwnerships();
-        }
+        checkNftOwnerships();
     }, [contract, address]);
 
     useEffect(() => {
         const checkAnswered = async () => {
+            if (!contract || !address) {
+                setQuizAnswered([]);
+                return;
+            }
+
             try {
                 let answered = [];
                 for (let course of coursesData) {
@@ -44,9 +52,7 @@ function CourseOverview() {
             }
         };
 
-        if (contract && address) {
-            checkAnswered();
-        }
+        checkAnswered();
     }, [contract, address]);
 
     return (
@@ -60,7 +66,7 @@ function CourseOverview() {
                             {ownedNfts.includes(course.id) && (
                                 <span className="badge badge-success position-absolute" style={{ top: '10px', right: '10px' }}>NFT owned</span>
                             )}
-                            {quizAnswered.includes(course.id) && (
+                            {(quizAnswered.includes(course.id) && !ownedNfts.includes(course.id)) && (
                                 <span className="badge badge-info position-absolute" style={{ top: '10px', right: '10px' }}>Answers submitted</span>
                             )}
                             <div className="card-body">

@@ -12,66 +12,11 @@ import Home from './components/Home';
 import Quiz from './components/Quiz';
 import Profile from "./components/Profile";
 
-const providerOptions = {
-    walletconnect: {
-        package: WalletConnectProvider,
-        options: {
-            rpc: {
-                1: process.env.REACT_APP_ALCHEMY_URL
-            }
-        }
-    }
-};
-
-let web3Modal;
-if (typeof window !== 'undefined') {
-    web3Modal = new Web3Modal({
-        network: "localhost",
-        cacheProvider: true,
-        providerOptions
-    });
-}
-
 function App() {
-    const [userWalletAddress, setUserWalletAddress] = useState(null);
-    const [provider, setProvider] = useState(null);
-
-    useEffect(() => {
-        if (web3Modal.cachedProvider) {
-            connectWallet();
-        }
-    }, []);
-
-    const connectWallet = async () => {
-        try {
-            const instance = await web3Modal.connect();
-            const provider = new ethers.providers.Web3Provider(instance);
-            const signer = provider.getSigner();
-            const address = await signer.getAddress();
-            setUserWalletAddress(address);
-            setProvider(provider);
-        } catch (e) {
-            console.error(e);
-        }
-    };
-
-    const disconnectWallet = async () => {
-        try {
-            if (web3Modal && web3Modal.clearCachedProvider) {
-                web3Modal.clearCachedProvider();
-            }
-
-            setUserWalletAddress(null);
-            setProvider(null);
-        } catch (e) {
-            console.error('Error disconnecting wallet:', e);
-        }
-    };
-
     return (
         <BlockchainProvider>
             <Router>
-                <Header userWalletAddress={userWalletAddress} connectWallet={connectWallet} disconnectWallet={disconnectWallet} />
+                <Header />
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/course" element={<CourseOverview />} />

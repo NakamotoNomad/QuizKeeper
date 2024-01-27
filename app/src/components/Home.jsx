@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import {useBlockchain} from "../contexts/BlockchainContext";
 
 function Home() {
+    const { address } = useBlockchain();
+
     return (
         <div className="container mt-4">
             <h1 className="text-center mb-4">Welcome to Quiz Keeper</h1>
@@ -15,7 +18,11 @@ function Home() {
             </p>
             <div className="d-flex justify-content-center">
                 <Link to="/course" className="btn btn-primary mx-2">View Courses</Link>
-                <Link to="/profile" className="btn btn-secondary mx-2">Your Dashboard</Link>
+                {address ? (
+                    <Link to="/profile" className="btn btn-secondary mx-2">Your Dashboard</Link>
+                ) : (
+                    <button className="btn btn-secondary mx-2" disabled>Your Dashboard</button>
+                )}
             </div>
         </div>
     );

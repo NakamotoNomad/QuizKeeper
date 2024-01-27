@@ -5,6 +5,7 @@ import { useBlockchain } from "../contexts/BlockchainContext";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { COURSE_ID_MAIN } from "../constants";
+import ConnectedWalletRequired from "./ConnectedWalletRequired";
 
 const Quiz = () => {
     const { contract, address } = useBlockchain();
@@ -82,6 +83,10 @@ const Quiz = () => {
             toast.error('Error submitting answers');
         }
     };
+
+    if (!address) {
+        return <ConnectedWalletRequired />;
+    }
 
     return (
         <div className="container mt-4">

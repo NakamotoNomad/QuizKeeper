@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import {useBlockchain} from "../contexts/BlockchainContext";
 
-const Header = ({ userWalletAddress, connectWallet, disconnectWallet }) => {
+const Header = () => {
+    const { address, connectWallet, disconnectWallet } = useBlockchain();
+
     return (
         <nav className="navbar navbar-expand-lg navbar-light">
             <Link to="/" className="navbar-brand">
@@ -9,9 +12,9 @@ const Header = ({ userWalletAddress, connectWallet, disconnectWallet }) => {
                 <b>Quiz Keeper</b>
             </Link>
             <div className="d-flex justify-content-end flex-grow-1 pe-3">
-                {userWalletAddress ? (
+                {address ? (
                     <div className="d-flex align-items-center">
-                        <span className="me-3">{userWalletAddress}</span>
+                        <span className="me-3">{address}</span>
                         <button onClick={disconnectWallet} className="btn btn-outline-logout">Disconnect</button>
                     </div>
                 ) : (

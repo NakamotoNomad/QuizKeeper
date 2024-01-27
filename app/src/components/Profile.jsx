@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useBlockchain } from '../contexts/BlockchainContext';
 import { COURSE_ID_MAIN } from "../constants";
+import ConnectedWalletRequired from "./ConnectedWalletRequired";
 
 /*
 TODO: add more infos for the user, e.g. list all open courses where the answers haven't been revealed yet, which
@@ -12,8 +13,12 @@ function Profile() {
 
     useEffect(() => {
         const fetchNFTs = async () => {
-            try {
+            if (!contract || !address) {
+                setNfts([]);
+                return;
+            }
 
+            try {
                 let updateCourses = [];
                 let index = 0;
                 while (true) {
@@ -56,6 +61,10 @@ function Profile() {
 
         fetchNFTs();
     }, [contract, address]);
+
+    if (!address) {
+        return <ConnectedWalletRequired />;
+    }
 
     return (
         <div className="container mt-4">
