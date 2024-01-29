@@ -2,9 +2,9 @@ const coursesData = [
     {
         id: '0',
         title: 'Main course',
-        description: 'The main course to learn about Web3 security and receive the initial NFT.',
+        description: 'The main course to learn about Web3 security and receive the main NFT.',
         logo: 'logo.png',
-        content: `*This is demo content copied from https://brave.com/web3/intro-to-web3-security/*
+        content: `*This is demo content copied from https://coinmarketcap.com/academy/article/kyberswap-elastic-exploited-dex-drained-of-dollar46m*
         
 Web3 is the decentralized Web. But what exactly does “decentralization” mean? Basically, that sites and apps live on blockchain networks instead of centralized servers (as they do in Web 2.0). While Web3 doesn’t always rely on crypto and blockchain, today the concept is almost indistinguishable from the tech that powers it.
 
@@ -141,8 +141,55 @@ For those interested in trying self-custody for the first time, or those looking
     },
     {
         id: '1',
+        title: 'November 2023 update',
+        description: 'Learn about the KyberSwap Elastic Exploit (DEX drained).',
+        logo: 'KyberLogo.png',
+        content: `*This is demo content copied from https://www.coindesk.com/consensus-magazine/2023/12/14/what-we-know-about-the-massive-ledger-hack/*
+        
+KyberSwap, a decentralized exchange (DEX), suffered an exploit, resulting in the loss of approximately $46 million worth of funds. The incident, which raised concerns among users regarding the security of their funds, was reported by the Kyber Network team on November 23 on X. As a precautionary measure, users were advised to withdraw their funds while an investigation was initiated.
+Blockchain analysts were able to identify the compromised wallet addresses, which remained active at the time of discovery. According to Debank, the attack led to the theft of approximately $46 million, including significant amounts of wrapped Ether (wETH), wrapped Lido-staked Ether (wstETH), and Arbitrum (ARB). The stolen funds were spread across various blockchain networks, such as Arbitrum, Optimism, Ethereum, Polygon, and Base.
+
+The attacker left an on-chain message to the protocol developers and members of the decentralized autonomous organization (DAO), indicating “negotiations will start in a few hours when I am fully rested.”
+
+The incident had a severe impact on KyberSwap's TVL, which experienced a sharp decline of 68% within a few hours. As a result, nearly $78 million was withdrawn from the protocol by users following the hack, a significant decrease from its peak of $134 million.
+Kyber Network Crystal (KNC) tokens briefly declined by over 5% since the incident, and is currently trading at around $0.7258.`,
+        quiz: [
+            {
+                id: '0',
+                text: 'Which assets were primarily stolen in the KyberSwap exploit?',
+                options: [
+                    { id: '0', text: 'Bitcoin and Ethereum' },
+                    { id: '1', text: 'Wrapped Ether (wETH), wrapped Lido-staked Ether (wstETH), and Arbitrum (ARB)' },
+                    { id: '2', text: 'Kyber Network Crystal (KNC) tokens' },
+                    { id: '3', text: 'USDC and DAI' },
+                ],
+            },
+            {
+                id: '1',
+                text: 'As a precaution after the exploit, what did KyberSwap advise its users to do?',
+                options: [
+                    { id: '0', text: 'Buy more KNC tokens' },
+                    { id: '1', text: 'Withdraw their funds' },
+                    { id: '2', text: 'Change their passwords' },
+                    { id: '3', text: 'Enable two-factor authentication' },
+                ],
+            },
+            {
+                id: '2',
+                text: 'What was the approximate value of funds lost in the KyberSwap exploit?',
+                options: [
+                    { id: '0', text: '$78 million' },
+                    { id: '1', text: '$46 million' },
+                    { id: '2', text: '$134 million' },
+                    { id: '3', text: '$0.7258 million' },
+                ],
+            },
+        ],
+    },
+    {
+        id: '2',
         title: 'December 2023 update',
-        description: 'Learn about the Ledger hack.',
+        description: 'Learn about the Ledger hack, affecting multiple well established dApps.',
         logo: 'LedgerLogo.png',
         content: `*This is demo content copied from https://www.coindesk.com/consensus-magazine/2023/12/14/what-we-know-about-the-massive-ledger-hack/*
         
